@@ -1,14 +1,15 @@
-import { Add, Remove } from "@material-ui/icons";
-import { useSelector } from "react-redux";
+import { Delete } from "@material-ui/icons";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { mobile } from "../responsive";
 import StripeCheckout from "react-stripe-checkout";
-import { Link,useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {userRequest} from '../requestMethod'
+import { userRequest } from "../requestMethod";
+import { deleteProduct } from "../Redux/cartReducer";
 
 const KEY = process.env.REACT_APP_STRIPE;
 
@@ -63,6 +64,7 @@ const Info = styled.div`
 const Product = styled.div`
   display: flex;
   justify-content: space-between;
+  position:relative;
   ${mobile({ flexDirection: "column" })}
 `;
 
@@ -80,6 +82,7 @@ const Details = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  position: relative;
 `;
 
 const ProductName = styled.span``;
@@ -122,11 +125,7 @@ const ProductPrice = styled.div`
   ${mobile({ marginBottom: "20px" })}
 `;
 
-const Hr = styled.hr`
-  background-color: #eee;
-  border: none;
-  height: 1px;
-`;
+const Hr = styled.br``;
 
 const Summary = styled.div`
   flex: 1;
@@ -158,30 +157,37 @@ const Button = styled.button`
   background-color: black;
   color: white;
   font-weight: 600;
-  cursor:pointer;
+  cursor: pointer;
+`;
+
+const Deleted = styled.p`
+  position: absolute;
+  top: 0;
+  right: 10vh;
+  cursor: pointer;
 `;
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
-  const [stripeToken,setStripeToken]= useState(null)
-  const history=useHistory()
+  const [stripeToken, setStripeToken] = useState(null);
+  const history = useHistory();
+  const dispatch = useDispatch();
 
-  const onToken = (token)=>{
-    setStripeToken(token)
-  }
-
-  useEffect(()=>{
-    const makeRequest= async () =>{
-     try{
-        const res= await userRequest.post('/checkout/payment',{
-        tokenId:stripeToken.id,
-        amount:500
-      });
-      history.push('/success',{data:res.data})
-     }catch{}
-    }
-    stripeToken && makeRequest()
-  },[stripeToken, cart.total, history])
+  const onToken = (token) => {
+    setStripeToken(token);
+  };
+  useEffect(() => {
+    const makeRequest = async () => {
+      try {
+        const res = await userRequest.post("/checkout/payment", {
+          tokenId: stripeToken.id,
+          amount: 500,
+        });
+        history.push("/success", { data: res.data });
+      } catch {}
+    };
+    stripeToken && makeRequest();
+  }, [stripeToken, cart.total, history]);
 
   return (
     <Container>
@@ -196,15 +202,21 @@ const Cart = () => {
             </Link>
           </TopButton>
           <TopTexts>
-            <TopText>Shopping Bag({cart.product.length > 0?cart.product.length:0})</TopText>
+            <TopText>
+              Shopping Bag(0)
+            </TopText>
             <TopText>Your Wishlist (0)</TopText>
           </TopTexts>
           <TopButton type="filled">CHECKOUT NOW</TopButton>
         </Top>
         <Bottom>
           <Info>
-            {cart.product.map((product) => (
+            {cart.products.map((product) => (
               <Product key={product._id}>
+                 <Deleted
+                    onClick={()=>dispatch(deleteProduct(product))} >
+                      <Delete />
+                    </Deleted>
                 <ProductDetail>
                   <Image src={product.img} />
                   <Details>
@@ -222,9 +234,7 @@ const Cart = () => {
                 </ProductDetail>
                 <PriceDetail>
                   <ProductAmountContainer>
-                    <Add />
-                    <ProductAmount>{product.quantity}</ProductAmount>
-                    <Remove />
+                    <ProductAmount>Quantity:{product.quantity}</ProductAmount>
                   </ProductAmountContainer>
                   <ProductPrice>
                     $ {product.quantity * product.price}
@@ -253,16 +263,16 @@ const Cart = () => {
               <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
             </SummaryItem>
             <StripeCheckout
-            name='Lama Shop'
-            image='https://avatars.githubusercontent.com/u/1486366?v=4'
-            billingAddress
-            shippingAddress
-            description={`Your total is $${cart.total}`}
-            amount={cart.total * 100}
-            token={onToken}
-            stripeKey={KEY}
+              name="Lama Shop"
+              image="https://avatars.githubusercontent.com/u/1486366?v=4"
+              billingAddress
+              shippingAddress
+              description={`Your total is $${cart.total}`}
+              amount={cart.total * 100}
+              token={onToken}
+              stripeKey={KEY}
             >
-            <Button>CHECKOUT NOW</Button>
+              <Button>CHECKOUT NOW</Button>
             </StripeCheckout>
           </Summary>
         </Bottom>

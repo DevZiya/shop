@@ -1,1 +1,1 @@
-alış veriş saytı copy. elave olunub admin panel yaradılıb tam dinamiklaəşdirilməyib. saytın özünün 90% dinamikdir. back end hazırlanıbş melumatlar postman ilə mongodb yə göndərilərək güncənlənib
+alış veriş saytı copy. elave olunub admin panel yaradılıb tam dinamiklaəşdirilməyib. saytın özünün tam dinamikdir. back end hazırlanıbş melumatlar postman ilə mongodb yə göndərilərək güncənlənib
